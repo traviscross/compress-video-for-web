@@ -1,17 +1,25 @@
 #!/bin/bash
 
 concat=false
-while getopts "c" o; do
+resolution="720"
+while getopts "cr:" o; do
   case "$o" in
     c) concat=true ;;
+    r) resolution="$OPTARG" ;;
   esac
 done
 shift $(($OPTIND-1))
 
 if [ $# -lt 1 ]; then
   echo "usage: $0 [-c] <in-files> ...">&2
+  echo "  [-r <resolution>]">&2
   exit 1
 fi
+
+case "$resolution" in
+  720) res_a="hd720" res_n="720p" ;;
+  1080) res_a="hd1080" res_n="1080p" ;;
+esac
 
 compress () {
   local ai="" if="$1"
@@ -27,7 +35,7 @@ compress () {
   echo "## ai: $ai">&2
   #parallel -j2 --progress <<EOF
   schedtool -D -e ffmpeg $ai -y \
-    -s hd720 \
+    -s "$res_a" \
     -r 29.97 \
     -c:v libvpx \
     -crf 10 \
@@ -35,9 +43,9 @@ compress () {
     -c:a libvorbis \
     -ar 48000 \
     -b:a 96k \
-    "${if%.*}_wq.webm"
+    "${if%.*}_${res_n}_wq.webm"
   schedtool -D -e ffmpeg $ai -y \
-    -s hd720 \
+    -s "$res_a" \
     -r 29.97 \
     -c:v h264 \
     -profile:v baseline \
@@ -47,7 +55,7 @@ compress () {
     -strict -2 \
     -ar 48000 \
     -b:a 96k \
-    "${if%.*}_wq.mp4"
+    "${if%.*}_${res_n}_wq.mp4"
 #EOF
   rm -f "$tmp"
 }
