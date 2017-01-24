@@ -28,6 +28,7 @@ compress () {
   #parallel -j2 --progress <<EOF
   schedtool -D -e ffmpeg $ai -y \
     -s hd720 \
+    -r 29.97 \
     -c:v libvpx \
     -crf 10 \
     -b:v 768k \
