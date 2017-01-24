@@ -63,7 +63,6 @@ compress () {
       -movflags faststart \
       -b:v "$bitrate_v" \
       -c:a aac \
-      -strict -2 \
       -ar 48000 \
       -b:a "$bitrate_a" \
       "${if%.*}_${res_n}_wq.mp4"
