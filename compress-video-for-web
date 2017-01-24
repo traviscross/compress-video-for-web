@@ -25,8 +25,11 @@ if [ $# -lt 1 ]; then
 fi
 
 case "$resolution" in
+  480) res_a="hd480" res_n="480p" ;;
   720) res_a="hd720" res_n="720p" ;;
   1080) res_a="hd1080" res_n="1080p" ;;
+  2048) res_a="2k" res_n="2048p" ;;
+  4096) res_a="4k" res_n="4096p" ;;
 esac
 
 compress () {
