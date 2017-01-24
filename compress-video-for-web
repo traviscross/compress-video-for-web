@@ -3,12 +3,14 @@
 concat=false
 bitrate_v="768k"
 bitrate_a="96k"
+format="all"
 framerate="29.97"
 resolution="720"
-while getopts "a:cm:r:v:" o; do
+while getopts "a:cf:m:r:v:" o; do
   case "$o" in
     a) bitrate_a="$OPTARG" ;;
     c) concat=true ;;
+    f) format="$OPTARG" ;;
     m) framerate="$OPTARG" ;;
     r) resolution="$OPTARG" ;;
     v) bitrate_v="$OPTARG" ;;
@@ -40,28 +42,32 @@ compress () {
   fi
   echo "## ai: $ai">&2
   #parallel -j2 --progress <<EOF
-  schedtool -D -e ffmpeg $ai -y \
-    -s "$res_a" \
-    -r "$framerate" \
-    -c:v libvpx \
-    -crf 10 \
-    -b:v "$bitrate_v" \
-    -c:a libvorbis \
-    -ar 48000 \
-    -b:a "$bitrate_a" \
-    "${if%.*}_${res_n}_wq.webm"
-  schedtool -D -e ffmpeg $ai -y \
-    -s "$res_a" \
-    -r "$framerate" \
-    -c:v h264 \
-    -profile:v baseline \
-    -movflags faststart \
-    -b:v "$bitrate_v" \
-    -c:a aac \
-    -strict -2 \
-    -ar 48000 \
-    -b:a "$bitrate_a" \
-    "${if%.*}_${res_n}_wq.mp4"
+  if test "$format" = all -o "$format" = webm; then
+    schedtool -D -e ffmpeg $ai -y \
+      -s "$res_a" \
+      -r "$framerate" \
+      -c:v libvpx \
+      -crf 10 \
+      -b:v "$bitrate_v" \
+      -c:a libvorbis \
+      -ar 48000 \
+      -b:a "$bitrate_a" \
+      "${if%.*}_${res_n}_wq.webm"
+  fi
+  if test "$format" = all -o "$format" = mp4; then
+    schedtool -D -e ffmpeg $ai -y \
+      -s "$res_a" \
+      -r "$framerate" \
+      -c:v h264 \
+      -profile:v baseline \
+      -movflags faststart \
+      -b:v "$bitrate_v" \
+      -c:a aac \
+      -strict -2 \
+      -ar 48000 \
+      -b:a "$bitrate_a" \
+      "${if%.*}_${res_n}_wq.mp4"
+  fi
 #EOF
   rm -f "$tmp"
 }
