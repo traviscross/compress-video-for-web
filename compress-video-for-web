@@ -33,6 +33,8 @@ compress () {
     -crf 10 \
     -b:v 768k \
     -c:a libvorbis \
+    -ar 48000 \
+    -b:a 96k \
     "${if%.*}_wq.webm"
   schedtool -D -e ffmpeg $ai -y \
     -s hd720 \
@@ -43,6 +45,8 @@ compress () {
     -b:v 768k \
     -c:a aac \
     -strict -2 \
+    -ar 48000 \
+    -b:a 96k \
     "${if%.*}_wq.mp4"
 #EOF
   rm -f "$tmp"
