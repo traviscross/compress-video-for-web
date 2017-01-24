@@ -1,12 +1,41 @@
 #!/bin/bash
 
+concat=false
+while getopts "c" o; do
+  case "$o" in
+    c) concat=true ;;
+  esac
+done
+shift $(($OPTIND-1))
+
 if [ $# -lt 1 ]; then
-  echo "usage: $0 <in-files> ...">&1
+  echo "usage: $0 [-c] <in-files> ...">&1
   exit 1
 fi
-for if in "$@"; do
+
+compress () {
+  local ai="" if="$1"
+  if $concat; then
+    local tmp="$(mktemp)"
+    for x in "$@"; do
+      echo "file '$(pwd)/$x'" >> "$tmp"
+    done
+    ai="-f concat -i $tmp"
+  else
+    ai="-i $1"
+  fi
+  echo "## ai: $ai">&2
   #parallel -j2 --progress <<EOF
-  ffmpeg -i "$if" -y -s hd720 -c:v libvpx -crf 10 -b:v 768k -c:a libvorbis "${if%.*}_wq.webm"
-  ffmpeg -i "$if" -y -s hd720 -c:v h264 -b:v 768k -c:a aac -strict -2 "${if%.*}_wq.mp4"
+  ffmpeg $ai -y -s hd720 -c:v libvpx -crf 10 -b:v 768k -c:a libvorbis "${if%.*}_wq.webm"
+  ffmpeg $ai -y -s hd720 -c:v h264 -b:v 768k -c:a aac -strict -2 "${if%.*}_wq.mp4"
 #EOF
-done
+  rm -f "$tmp"
+}
+
+if $concat; then
+  compress "$@"
+else
+  for if in "$@"; do
+    compress "$if"
+  done
+fi
