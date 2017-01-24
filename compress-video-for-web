@@ -26,14 +26,14 @@ compress () {
   fi
   echo "## ai: $ai">&2
   #parallel -j2 --progress <<EOF
-  ffmpeg $ai -y \
+  schedtool -D -e ffmpeg $ai -y \
     -s hd720 \
     -c:v libvpx \
     -crf 10 \
     -b:v 768k \
     -c:a libvorbis \
     "${if%.*}_wq.webm"
-  ffmpeg $ai -y \
+  schedtool -D -e ffmpeg $ai -y \
     -s hd720 \
     -c:v h264 \
     -b:v 768k \
