@@ -25,7 +25,7 @@ bitrate_v="768k"
 bitrate_a="96k"
 format="all"
 framerate="29.97"
-resolution="720"
+resolution=""
 while getopts "a:cf:m:r:v:" o; do
   case "$o" in
     a) bitrate_a="$OPTARG" ;;
@@ -44,6 +44,7 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
+res_a=""
 case "$resolution" in
   480) res_a="hd480" res_n="480p" ;;
   720) res_a="hd720" res_n="720p" ;;
@@ -64,10 +65,12 @@ compress () {
     ai="-i $1"
   fi
   echo "## ai: $ai">&2
+  res_arg=""; test -z "$res_a" || res_arg="-s $res_a"
+  res_sf=""; test -z "$res_n" || res_sf="_${res_n}"
   #parallel -j2 --progress <<EOF
   if test "$format" = all -o "$format" = webm; then
     schedtool -D -e ffmpeg $ai -y \
-      -s "$res_a" \
+      $res_arg \
       -r "$framerate" \
       -c:v libvpx \
       -crf 10 \
@@ -79,7 +82,7 @@ compress () {
   fi
   if test "$format" = all -o "$format" = mp4; then
     schedtool -D -e ffmpeg $ai -y \
-      -s "$res_a" \
+      $res_arg \
       -r "$framerate" \
       -c:v h264 \
       -profile:v baseline \
@@ -88,7 +91,7 @@ compress () {
       -c:a aac \
       -ar 48000 \
       -b:a "$bitrate_a" \
-      "${if%.*}_${res_n}_wq.mp4"
+      "${if%.*}${res_sf}_wq.mp4"
   fi
 #EOF
   rm -f "$tmp"
